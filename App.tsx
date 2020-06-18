@@ -7,10 +7,15 @@ import Map from "./src/components/Map";
 import useLocation from "./src/hooks/useLocation";
 import useSavedPoints from "./src/hooks/useSavedPoints";
 import PinModal from "./src/components/PinModal";
+import SyncingModal from "./src/components/SyncingModal";
 
 export default function App() {
   const { availability } = useLocation();
-  const [points, { addNewPoint, clearPoints, removePoint }] = useSavedPoints();
+  const [
+    points,
+    syncing,
+    { addNewPoint, removePoint, syncPoints },
+  ] = useSavedPoints();
   const [isAdding, setIsAdding] = useState(false);
   const [focusedPoint, setFocusedPoint] = useState<SavedPoint | null>(null);
 
@@ -22,14 +27,16 @@ export default function App() {
     );
   }
 
+  const hasPointsToSync = points.some((point) => !point.syncedOn);
+
   return (
     <Container>
       <Map setFocusedPoint={setFocusedPoint} points={points}></Map>
       <Actions>
         <CustomButton
-          title="Sincronizar"
-          onPress={() => Alert.alert("cool")}
-          disabled
+          title={syncing ? "Aguarde..." : "Sincronizar"}
+          onPress={() => syncPoints()}
+          disabled={!hasPointsToSync || syncing}
         ></CustomButton>
         <CustomButton
           title="Adicionar"
@@ -48,6 +55,7 @@ export default function App() {
         isOpen={!!focusedPoint}
         close={() => setFocusedPoint(null)}
       ></PinModal>
+      <SyncingModal isOpen={syncing}></SyncingModal>
     </Container>
   );
 }
